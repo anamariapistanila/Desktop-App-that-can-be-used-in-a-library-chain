@@ -1,0 +1,462 @@
+package Model;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+@SuppressWarnings("deprecation")
+public class PersistentaCarte {
+
+	ArrayList<Carte> carti = new ArrayList<Carte>();
+
+	public PersistentaCarte() {
+	}
+
+	public ArrayList<Carte> extragere() {
+		String filePath = "./carti.xml";
+		File xmlFile = new File(filePath);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xmlFile);
+			doc.getDocumentElement().normalize();
+
+			NodeList nodelist = doc.getElementsByTagName("carte");
+			for (int i = 0; i < nodelist.getLength(); i++) {
+				Node node = nodelist.item(i);
+				System.out.println("Node name: " + node.getNodeName() + " " + (i + 1));
+
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					Element elem = (Element) node;
+					Carte carte = new Carte((elem.getElementsByTagName("domeniu").item(0).getTextContent()),
+							Integer.parseInt(elem.getElementsByTagName("disponibilitate").item(0).getTextContent()),
+							elem.getElementsByTagName("editura").item(0).getTextContent(),
+							elem.getElementsByTagName("autor").item(0).getTextContent(),
+							Double.parseDouble(elem.getElementsByTagName("pret").item(0).getTextContent()),
+							elem.getElementsByTagName("titlu").item(0).getTextContent());
+					System.out.println(elem.getElementsByTagName("domeniu").item(0).getTextContent());
+					carti.add(carte);
+				}
+			}
+			Carti listaCarti = new Carti();
+			listaCarti.setListaCarti(carti);
+			System.out.println(carti.size());
+		} catch (Exception e) {
+		}
+		return carti;
+
+	}
+
+	public void vizualizare() throws FileNotFoundException {
+
+		ArrayList<Carte> carti;
+		carti = extragere();
+		ObservableList<Carte> date = FXCollections.observableArrayList();
+		for (int j = 0; j < carti.size(); j++) {
+			date.add(carti.get(j));
+		}
+		TableView<Carte> table = new TableView<Carte>();
+		table.getColumns().addAll(Carte.getColumn(table));
+		table.setItems(date);
+		Stage stage = new Stage();
+		VBox root = new VBox();
+		root.getChildren().addAll(table);
+		Scene scene = new Scene(root, 1200, 730);
+		stage.setScene(scene);
+		stage.show();
+
+	}
+
+	public void filtrareCarti(ComboBox<String> combo, TextField domeniu, TextField disponibilitate, TextField editura,
+			TextField autor, TextField pret) throws Exception {
+		ArrayList<Carte> carti;
+		carti = extragere();
+		ObservableList<Carte> date = FXCollections.observableArrayList();
+		String aux = combo.getSelectionModel().getSelectedItem().toString();
+		for (int i = 0; i < carti.size(); i++) {
+			if (aux.equals("Domeniu") && (carti.get(i).getDomeniu().equals(domeniu.getText())))
+				date.add(carti.get(i));
+			if (aux.equals("Disponibilitate")
+					&& (carti.get(i).getDisponibilitate() == Integer.parseInt(disponibilitate.getText())))
+				date.add(carti.get(i));
+			if (aux.equals("Editura") && (carti.get(i).getEditura().equals(editura.getText())))
+				date.add(carti.get(i));
+
+			if (aux.equals("Autor") && (carti.get(i).getAutor().equals(autor.getText())))
+				date.add(carti.get(i));
+			if (aux.equals("Pret") && (carti.get(i).getPret() == Double.parseDouble(pret.getText())))
+				date.add(carti.get(i));
+
+		}
+
+		TableView<Carte> table = new TableView<Carte>();
+		table.getColumns().addAll(Carte.getColumn(table));
+		table.setItems(date);
+		Stage stage = new Stage();
+		VBox root = new VBox();
+		root.getChildren().addAll(table);
+		Scene scene = new Scene(root, 1200, 730);
+		stage.setScene(scene);
+		stage.show();
+
+	}
+
+	public void adaugare(TextField domeniu, TextField disponibilitate, TextField editura, TextField autor,
+			TextField pret, TextField titlu) throws FileNotFoundException {
+		String path = "./carti.xml";
+		File xml = new File(path);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		try {
+
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xml);
+			Element rootElement = doc.getDocumentElement();
+			org.w3c.dom.Text lineBreak = doc.createTextNode("\n");
+			org.w3c.dom.Text lineBreak1 = doc.createTextNode("\n");
+			org.w3c.dom.Text lineBreak2 = doc.createTextNode("\n");
+			org.w3c.dom.Text lineBreak3 = doc.createTextNode("\n");
+			org.w3c.dom.Text lineBreak4 = doc.createTextNode("\n");
+			org.w3c.dom.Text lineBreak5 = doc.createTextNode("\n");
+			org.w3c.dom.Text lineBreak6 = doc.createTextNode("\n");
+
+			Element carte = doc.createElement("carte");
+			rootElement.appendChild(carte);
+			carte.appendChild(lineBreak6);
+
+			Element dom = doc.createElement("domeniu");
+			dom.appendChild(doc.createTextNode(domeniu.getText()));
+			carte.appendChild(dom);
+			carte.appendChild(lineBreak);
+
+			Element disponibil = doc.createElement("disponibilitate");
+			disponibil.appendChild(doc.createTextNode(disponibilitate.getText()));
+			carte.appendChild(disponibil);
+			carte.appendChild(lineBreak1);
+
+			Element edit = doc.createElement("editura");
+			edit.appendChild(doc.createTextNode(editura.getText()));
+			carte.appendChild(edit);
+			carte.appendChild(lineBreak2);
+
+			Element aut = doc.createElement("autor");
+			aut.appendChild(doc.createTextNode(autor.getText()));
+			carte.appendChild(aut);
+			carte.appendChild(lineBreak3);
+
+			Element pr = doc.createElement("pret");
+			pr.appendChild(doc.createTextNode(pret.getText()));
+			carte.appendChild(pr);
+			carte.appendChild(lineBreak4);
+
+			Element tit = doc.createElement("titlu");
+			tit.appendChild(doc.createTextNode(titlu.getText()));
+			carte.appendChild(tit);
+			carte.appendChild(lineBreak5);
+
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(doc);
+
+			StreamResult result = new StreamResult("./carti.xml");
+			transformer.transform(source, result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void StergeCarte(TextField titlu) {
+
+		String filePath = "./carti.xml";
+		File xmlFile = new File(filePath);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xmlFile);
+			doc.getDocumentElement().normalize();
+
+			NodeList nList = doc.getElementsByTagName("carte");
+			for (int i = 0; i < nList.getLength(); i++) {
+
+				Element person = (Element) nList.item(i);
+
+				Element name = (Element) person.getElementsByTagName("titlu").item(0);
+
+				String pName = name.getTextContent();
+				System.out.println(pName);
+				if (pName.equals(titlu.getText())) {
+					System.out.println("Found");
+					person.getParentNode().removeChild(person);
+
+					doc.normalize();
+
+					TransformerFactory transformerFactory = TransformerFactory.newInstance();
+					Transformer transformer = transformerFactory.newTransformer();
+					DOMSource source = new DOMSource(doc);
+					StreamResult result = new StreamResult(new File(filePath));
+					transformer.transform(source, result);
+
+				}
+			}
+
+		} catch (Exception e) {
+		}
+
+	}
+
+	public void vanzareCarte(TextField titlu) {
+
+		String filePath = "./carti.xml";
+		File xmlFile = new File(filePath);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xmlFile);
+			doc.getDocumentElement().normalize();
+
+			NodeList nList = doc.getElementsByTagName("carte");
+			for (int i = 0; i < nList.getLength(); i++) {
+
+				Element person = (Element) nList.item(i);
+
+				Element name = (Element) person.getElementsByTagName("titlu").item(0);
+
+				String pName = name.getTextContent();
+				System.out.println(pName);
+				if (pName.equals(titlu.getText())) {
+					System.out.println("Found");
+
+					Node node = person.getElementsByTagName("disponibilitate").item(0).getFirstChild();
+					Element elem = (Element) person;
+					int disponibil = Integer
+							.parseInt(elem.getElementsByTagName("disponibilitate").item(0).getTextContent());
+					disponibil--;
+					System.out.println(disponibil);
+					node.setNodeValue(String.valueOf(disponibil));
+					System.out.println("setat");
+
+					doc.normalize();
+
+					TransformerFactory transformerFactory = TransformerFactory.newInstance();
+					Transformer transformer = transformerFactory.newTransformer();
+					DOMSource source = new DOMSource(doc);
+					StreamResult result = new StreamResult(new File(filePath));
+					transformer.transform(source, result);
+				}
+			}
+
+		} catch (Exception e) {
+		}
+
+	}
+
+	public void Actualizare(TextField domeniu, TextField disponibilitate, TextField editura, TextField autor,
+			TextField pret, TextField titlu) throws Exception {
+		String filePath = "./carti.xml";
+		File xmlFile = new File(filePath);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xmlFile);
+			doc.getDocumentElement().normalize();
+
+			NodeList nList = doc.getElementsByTagName("carte");
+			for (int i = 0; i < nList.getLength(); i++) {
+
+				Element person = (Element) nList.item(i);
+
+				Element name = (Element) person.getElementsByTagName("titlu").item(0);
+
+				String pName = name.getTextContent();
+				System.out.println(pName);
+				if (pName.equals(titlu.getText())) {
+					System.out.println("Found");
+					if (disponibilitate.getText().isEmpty()) {
+					} else {
+
+						Node node = person.getElementsByTagName("disponibilitate").item(0).getFirstChild();
+						node.setNodeValue(disponibilitate.getText());
+						System.out.println("setat");
+					}
+
+					if (domeniu.getText().isEmpty()) {
+					} else {
+
+						Node node = person.getElementsByTagName("domeniu").item(0).getFirstChild();
+						node.setNodeValue(domeniu.getText());
+						System.out.println("setat");
+					}
+
+					if (editura.getText().isEmpty()) {
+					} else {
+
+						Node node = person.getElementsByTagName("editura").item(0).getFirstChild();
+						node.setNodeValue(editura.getText());
+						System.out.println("setat");
+					}
+					if (autor.getText().isEmpty()) {
+					} else {
+
+						Node node = person.getElementsByTagName("autor").item(0).getFirstChild();
+						node.setNodeValue(autor.getText());
+						System.out.println("setat");
+					}
+
+					if (pret.getText().isEmpty()) {
+					} else {
+
+						Node node = person.getElementsByTagName("pret").item(0).getFirstChild();
+						node.setNodeValue(pret.getText());
+						System.out.println("setat");
+					}
+
+					doc.normalize();
+
+					TransformerFactory transformerFactory = TransformerFactory.newInstance();
+					Transformer transformer = transformerFactory.newTransformer();
+					DOMSource source = new DOMSource(doc);
+					StreamResult result = new StreamResult(new File(filePath));
+					transformer.transform(source, result);
+				}
+			}
+
+		} catch (Exception e) {
+		}
+	}
+
+	public void cautareCarte(TextField titlu) throws FileNotFoundException {
+
+		ArrayList<Carte> carti;
+		carti = extragere();
+
+		ObservableList<Carte> date = FXCollections.observableArrayList();
+		for (int j = 0; j < carti.size(); j++) {
+
+			if (carti.get(j).getTitlu().equals(titlu.getText())) {
+				date.add(carti.get(j));
+				TableView<Carte> table = new TableView<Carte>();
+				table.getColumns().addAll(Carte.getColumn(table));
+				table.setItems(date);
+				Stage stage = new Stage();
+				VBox root = new VBox();
+				root.getChildren().addAll(table);
+				Scene scene = new Scene(root, 1200, 730);
+				stage.setScene(scene);
+				stage.show();
+
+			}
+
+		}
+
+	}
+
+	@SuppressWarnings({ "unchecked" })
+	public void VizualizareRapoarte(ComboBox<String> comb1) throws IOException {
+
+		ArrayList<Carte> listaCarti;
+		listaCarti = extragere();
+
+		String aux = comb1.getSelectionModel().getSelectedItem().toString();
+		if (aux.equals("CSV")) {
+			Writer writer = null;
+			try {
+				File file = new File("./Carti.csv.");
+				writer = new BufferedWriter(new FileWriter(file));
+
+				for (int j = 0; j < listaCarti.size(); j++) {
+
+					String text = listaCarti.get(j).getDomeniu() + "," + listaCarti.get(j).getDisponibilitate() + ","
+							+ listaCarti.get(j).getEditura() + "," + "," + listaCarti.get(j).getAutor() + ","
+							+ listaCarti.get(j).getPret() + "," + listaCarti.get(j).getTitlu() + "\n";
+
+					writer.write(text);
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			} finally {
+
+				writer.flush();
+				writer.close();
+			}
+		} else if (aux.equals("JSON")) {
+			JSONArray lista = new JSONArray();
+			for (int i = 0; i < listaCarti.size(); i++) {
+				JSONObject carti = new JSONObject();
+				carti.put("domeniu", listaCarti.get(i).getDomeniu());
+				carti.put("disponibilitate", listaCarti.get(i).getDisponibilitate());
+				carti.put("editura", listaCarti.get(i).getEditura());
+				carti.put("autor", listaCarti.get(i).getAutor());
+				carti.put("pret", listaCarti.get(i).getPret());
+				carti.put("titlu", listaCarti.get(i).getTitlu());
+
+				lista.add(carti);
+
+				// Write JSON file
+
+			}
+			try (FileWriter file = new FileWriter("./Carti.json")) {
+
+				file.write(lista.toJSONString());
+				file.flush();
+
+			}
+		}
+	}
+
+	public void statistici() {
+		Stage stage = new Stage();
+		Scene scene = new Scene(new Group());
+		stage.setTitle("Disponibilitate");
+		stage.setWidth(1200);
+		stage.setHeight(730);
+		ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(new PieChart.Data("Medicina", 4),
+				new PieChart.Data("Psihologie", 5), new PieChart.Data("Matematica", 4),
+				new PieChart.Data("Informatica", 5), new PieChart.Data("Literatura", 5));
+		final PieChart chart = new PieChart(pieChartData);
+		chart.setTitle("Carti disponibile");
+
+		((Group) scene.getRoot()).getChildren().add(chart);
+		stage.setScene(scene);
+		stage.show();
+	}
+
+}

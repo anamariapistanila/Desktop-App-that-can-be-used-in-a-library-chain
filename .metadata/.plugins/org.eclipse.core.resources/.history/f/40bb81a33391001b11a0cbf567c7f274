@@ -1,0 +1,107 @@
+package Model;
+
+import java.util.ArrayList;
+
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+public class Utilizator {
+
+	private String nume;
+
+	private String prenume;
+
+	private String cont;
+
+	private String parola;
+
+	private int idPersoana;
+
+	public Utilizator() {
+	}
+
+	public Utilizator(String nume, String prenume, String cont, String parola, int idPersoana) {
+		super();
+		this.nume = nume;
+		this.prenume = prenume;
+		this.cont = cont;
+		this.parola = parola;
+		this.idPersoana = idPersoana;
+
+	}
+
+	public String getNume() {
+		return nume;
+	}
+
+	public int getIdPersoana() {
+		return idPersoana;
+	}
+
+	public void setIdPersoana(int idPersoana) {
+		this.idPersoana = idPersoana;
+	}
+
+	public void setNume(String nume) {
+		this.nume = nume;
+	}
+
+	public String getPrenume() {
+		return prenume;
+	}
+
+	public void setPrenume(String prenume) {
+		this.prenume = prenume;
+	}
+
+	public String getParola() {
+		return parola;
+	}
+
+	public void setParola(String parola) {
+		this.parola = parola;
+	}
+
+	public String getCont() {
+		return cont;
+	}
+
+	public void setCont(String cont) {
+		this.cont = cont;
+	}
+
+	public static ArrayList<TableColumn<Utilizator, ?>> getColumn(@SuppressWarnings("rawtypes") TableView table) {
+		int i;
+		ArrayList<TableColumn<Utilizator, ?>> columns = new ArrayList<TableColumn<Utilizator, ?>>();
+		String[] columnNames = { "Nume", "Prenume", "Cont", "Parola" };
+		String[] numeVariabile = { "nume", "prenume", "cont", "parola" };
+		Integer[] column_width = { 15, 15, 15, 15, 15, 20 };
+
+		i = 0;
+		TableColumn<Utilizator, String> nume = new TableColumn<>(columnNames[i++]);
+		TableColumn<Utilizator, String> prenume = new TableColumn<>(columnNames[i++]);
+		TableColumn<Utilizator, String> cont = new TableColumn<>(columnNames[i++]);
+		TableColumn<Utilizator, String> parola = new TableColumn<>(columnNames[i++]);
+
+		i = 0;
+		nume.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		prenume.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		cont.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		parola.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+
+		i = 0;
+		nume.setCellValueFactory(new PropertyValueFactory<Utilizator, String>(numeVariabile[i++]));
+		prenume.setCellValueFactory(new PropertyValueFactory<Utilizator, String>(numeVariabile[i++]));
+		cont.setCellValueFactory(new PropertyValueFactory<Utilizator, String>(numeVariabile[i++]));
+		parola.setCellValueFactory(new PropertyValueFactory<Utilizator, String>(numeVariabile[i++]));
+
+		columns.add(nume);
+		columns.add(prenume);
+		columns.add(cont);
+		columns.add(parola);
+
+		return columns;
+	}
+
+}

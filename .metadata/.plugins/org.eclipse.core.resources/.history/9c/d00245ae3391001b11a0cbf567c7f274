@@ -1,0 +1,119 @@
+package Model;
+
+import java.util.ArrayList;
+
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+public class Carte {
+	private String domeniu;
+	private int disponibilitate;
+	private String editura;
+	private String autor;
+	private double pret;
+	private String titlu;
+
+	public Carte() {
+	}
+
+	public Carte(String domeniu, int disponibilitate, String editura, String autor, double pret, String titlu) {
+		super();
+		this.domeniu = domeniu;
+		this.disponibilitate = disponibilitate;
+		this.editura = editura;
+		this.autor = autor;
+		this.pret = pret;
+		this.titlu = titlu;
+	}
+
+	public String getDomeniu() {
+		return domeniu;
+	}
+
+	public void setDomeniu(String domeniu) {
+		this.domeniu = domeniu;
+	}
+
+	public int getDisponibilitate() {
+		return disponibilitate;
+	}
+
+	public void setDisponibilitate(int disponibilitate) {
+		this.disponibilitate = disponibilitate;
+	}
+
+	public String getEditura() {
+		return editura;
+	}
+
+	public void setEditura(String editura) {
+		this.editura = editura;
+	}
+
+	public String getAutor() {
+		return autor;
+	}
+
+	public void setAutor(String autor) {
+		this.autor = autor;
+	}
+
+	public double getPret() {
+		return pret;
+	}
+
+	public void setPret(double pret) {
+		this.pret = pret;
+	}
+
+	public String getTitlu() {
+		return titlu;
+	}
+
+	public void setTitlu(String titlu) {
+		this.titlu = titlu;
+	}
+
+	public static ArrayList<TableColumn<Carte, ?>> getColumn(@SuppressWarnings("rawtypes") TableView table) {
+		int i;
+		ArrayList<TableColumn<Carte, ?>> columns = new ArrayList<TableColumn<Carte, ?>>();
+		String[] columnNames = { "Domeniu", "Disponibilitate", "Editura", "Autor", "Pret", "Titlu" };
+		String[] numeVariabile = { "domeniu", "disponibilitate", "editura", "autor", "pret", "titlu" };
+		Integer[] column_width = { 15, 15, 15, 15, 15, 20 };
+
+		i = 0;
+		TableColumn<Carte, String> domeniu = new TableColumn<>(columnNames[i++]);
+		TableColumn<Carte, String> disponibilitate = new TableColumn<>(columnNames[i++]);
+		TableColumn<Carte, String> editura = new TableColumn<>(columnNames[i++]);
+		TableColumn<Carte, String> autor = new TableColumn<>(columnNames[i++]);
+		TableColumn<Carte, String> pret = new TableColumn<>(columnNames[i++]);
+		TableColumn<Carte, String> titlu = new TableColumn<>(columnNames[i++]);
+
+		i = 0;
+		domeniu.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		disponibilitate.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		editura.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		autor.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		pret.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+		titlu.prefWidthProperty().bind(table.widthProperty().divide(100 / column_width[i++]));
+
+		i = 0;
+		domeniu.setCellValueFactory(new PropertyValueFactory<Carte, String>(numeVariabile[i++]));
+		disponibilitate.setCellValueFactory(new PropertyValueFactory<Carte, String>(numeVariabile[i++]));
+		editura.setCellValueFactory(new PropertyValueFactory<Carte, String>(numeVariabile[i++]));
+		autor.setCellValueFactory(new PropertyValueFactory<Carte, String>(numeVariabile[i++]));
+		pret.setCellValueFactory(new PropertyValueFactory<Carte, String>(numeVariabile[i++]));
+		titlu.setCellValueFactory(new PropertyValueFactory<Carte, String>(numeVariabile[i++]));
+
+		columns.add(domeniu);
+		columns.add(disponibilitate);
+		columns.add(editura);
+		columns.add(autor);
+		columns.add(pret);
+		columns.add(titlu);
+
+		return columns;
+	}
+
+}

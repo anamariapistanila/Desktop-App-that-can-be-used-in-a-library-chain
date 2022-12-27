@@ -1,0 +1,147 @@
+package Controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.*;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
+import Model.ModelLogin;
+import Model.Observer1;
+import Model.PersistentaUtilizator;
+import Model.Utilizator;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class LoginController implements Observer1 {
+
+	@FXML
+	private TextField cont;
+
+	@FXML
+	private TextField parola;
+
+	@FXML
+	private Button autentificare;
+
+	@FXML
+	private Label cont1;
+
+	@FXML
+	private Label parola1;
+	ModelLogin model = new ModelLogin();
+
+	public LoginController() {
+		this.model.Adaugare(this);
+
+	}
+
+	@FXML
+	void loginButton(ActionEvent event) {
+
+		Utilizator user = new Utilizator(1, "Pistanila", "Ana-Maria", "Admin", "1234");
+
+		PersistentaUtilizator data = new PersistentaUtilizator();
+		ArrayList<Utilizator> listaUtilizatori;
+		listaUtilizatori = data.extragere();
+
+		ObservableList<Utilizator> date = FXCollections.observableArrayList();
+		for (int j = 0; j < listaUtilizatori.size(); j++) {
+			date.add(listaUtilizatori.get(j));
+		}
+		boolean gasit = false;
+
+		for (int i = 0; i < date.size(); i++) {
+			System.out.println(date.get(i).getCont());
+
+			if (date.get(i).getParola().equals(parola.getText()) && date.get(i).getCont().equals(cont.getText())) {
+				gasit = true;
+
+				try {
+
+					loadAngajat(event);
+
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+			}
+
+		}
+
+		if (user.getParola().equals(parola.getText()) && user.getCont().equals(cont.getText())) {
+			gasit = true;
+			try {
+				loadAdmin(event);
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			}
+		}
+
+		if (gasit == false) {
+			Alert errorAlert = new Alert(AlertType.ERROR);
+			errorAlert.setContentText("Intrare invalida");
+			errorAlert.showAndWait();
+
+		}
+		this.model.setOperatie("Autentificare");
+
+	}
+
+	private void loadAdmin(ActionEvent event) throws IOException {
+		Parent viewParent = FXMLLoader.load(getClass().getResource("/View/admin.fxml"));
+		Scene viewScene = new Scene(viewParent);
+
+		// getting the stage information
+		Stage windwow = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		windwow.setScene(viewScene);
+		windwow.show();
+	}
+
+	private void loadAngajat(ActionEvent event) throws IOException {
+		Parent viewParent = FXMLLoader.load(getClass().getResource("/View/angajat.fxml"));
+		Scene viewScene = new Scene(viewParent);
+
+		// getting the stage information
+		Stage windwow = (Stage) ((Node) event.getSource()).getScene().getWindow();
+		windwow.setScene(viewScene);
+		windwow.show();
+	}
+
+	@FXML
+	void Romana() {
+		cont1.setText("Cont");
+		parola1.setText("Parola");
+		autentificare.setText("Autentificare");
+
+	}
+
+	@FXML
+	void Engleza() {
+		cont1.setText("Account");
+		parola1.setText("Password");
+		autentificare.setText("Login");
+
+	}
+
+	@FXML
+	void Franceza() {
+		cont1.setText("Compte");
+		parola1.setText("Mot");
+		autentificare.setText("Connexion");
+
+	}
+
+	@Override
+	public void Actualizeaza() {
+
+	}
+
+}

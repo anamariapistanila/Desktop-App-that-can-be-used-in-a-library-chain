@@ -1,0 +1,24 @@
+INDEX VERSION 1.131+D:\Users\windows.10\Desktop\Proiect_MVC\.metadata\.plugins\org.eclipse.jdt.core
+2609714019.index
+561689436.index
+1741647643.index
+2538946849.index
+925815825.index
+2200875372.index
+1195713242.index
+686889833.index
+2973695523.index
+2304052423.index
+615226062.index
+1148937498.index
+50477598.index
+3166927587.index
+3454118771.index
+3450831843.index
+711050520.index
+858989570.index
+4159017284.index
+3839578677.index
+3993276655.index
+3720716507.index
+1542774334.index
