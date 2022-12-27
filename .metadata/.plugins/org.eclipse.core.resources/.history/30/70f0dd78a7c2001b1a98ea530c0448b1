@@ -1,0 +1,39 @@
+package Server;
+
+
+
+import CS.Json;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.time.Instant;
+import java.util.ArrayList;
+
+import CS.Request;
+import CS.Response;
+
+    public class Server {
+        private static ArrayList<ClientManager> users = new ArrayList<ClientManager>();
+        private static ArrayList<ClientManager> admins = new ArrayList<ClientManager>();
+
+        public static void main(String[] args) throws IOException {
+            try (ServerSocket socket = new ServerSocket(3001)) {
+                while (true) {
+                    System.out.println(Instant.now() + " Waiting for client...");
+                    Socket clientSocket = socket.accept();
+                    ClientManager clientManager = new ClientManager(clientSocket); 
+                    clientManager.start();
+                }
+            }
+        }
+
+        public static void addUserManager(ClientManager clientManager){
+            users.add(clientManager);
+        }
+        public static void addAdminManager(ClientManager adminManager){
+            admins.add(adminManager);
+        }
+    }
+
+

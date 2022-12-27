@@ -1,0 +1,361 @@
+package Server;
+
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.time.Instant;
+import java.util.ArrayList;
+
+import CS.Request;
+import CS.Response;
+import CS.Json;
+import Model.Utilizator;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.TextArea;
+import Model.Carte;
+import Model.PersistentaCarte;
+import Model.PersistentaUtilizator;
+
+
+public class ClientManager extends Thread{
+    private final Socket clientSocket;
+    private long lastSentMessageMillis;
+    private ObjectOutputStream output;
+
+    public ClientManager(Socket clientSocket){
+        this.clientSocket = clientSocket;
+    }
+
+    @Override
+    public void run() {
+        try (ObjectOutputStream output = new ObjectOutputStream(clientSocket.getOutputStream());
+             ObjectInputStream input = new ObjectInputStream(clientSocket.getInputStream())) {
+            this.output = output;
+            while (clientSocket.isConnected()) {
+                if (System.currentTimeMillis() - lastSentMessageMillis > 10) {
+                    lastSentMessageMillis = System.currentTimeMillis();
+                }
+
+                boolean clientHasData = clientSocket.getInputStream().available() > 0;
+                if (clientHasData) { 
+                    Request request = (Request) input.readObject(); 
+                    System.out.println(Instant.now() + " Got from client: " + clientSocket.getPort() + " message: " + request);
+                    handleRequest(request, output); 
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println(Instant.now() + " Client disconnected?");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // cleanup
+        try {
+            clientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleRequest(Request request, ObjectOutputStream output) throws IOException {
+        switch(request.getAction()){
+            case "UserLogin":
+                UserLogin(request.getJsonData(), output);
+                break;
+            case "VizualizareAngajati":    
+                VizualizareAngajati(request.getJsonData(), output);
+                break;
+            case "AdaugareAngajat":    
+                AdaugareAngajat(request.getJsonData(), output);
+                break;
+            case "StergereAngajat":    
+               StergereAngajat(request.getJsonData(), output);
+                break;
+            case "ActualizareAngajat":    
+                ActualizareAngajat(request.getJsonData(), output);
+                break;
+            case "AdaugareCarte":    
+              AdaugareCarte(request.getJsonData(), output);
+                break;
+            case "StergereCarte":    
+                StergereCarte(request.getJsonData(), output);
+                break;
+            case "ActualizareCarte":    
+                ActualizareCarte(request.getJsonData(), output);
+                break;
+            case "CautaCarte":    
+                CautaCarte(request.getJsonData(), output);
+                break;
+        
+            case "VizualizareCarti":    
+                vizualizareCarti(request.getJsonData(), output);
+                break;
+            case "FiltrareCarti":    
+            	FiltrareCarti(request.getJsonData(), output);
+                break;
+            case "Rapoarte":    
+            	Rapoarte(request.getJsonData(), output);
+            case "Statistici":    
+            	Statistici(request.getJsonData(), output);
+                break;
+        }
+        
+
+    }
+
+    private void UserLogin(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String username = split[0];
+        String password = split[1];
+        System.out.println(username + " "+password);
+
+        PersistentaUtilizator utilizatorP= new PersistentaUtilizator();
+		ArrayList<Utilizator> angajati = utilizatorP.extragere();
+		Boolean gasit = false;
+		for (int i = 0; i < angajati.size(); i++) {
+			if (username.equals(angajati.get(i).getCont())&& password.equals(angajati.get(i).getParola())) {
+			  System.out.println("Angajat valid");
+			  gasit=true;
+			  }
+			}
+		if (username.equals("Admin") && password.equals("1234"))
+		{
+			gasit=true;
+		}
+        
+        Response response;
+
+        if(gasit){
+            response = new Response("UserLoginResponse", "success", Json.convertToJSON(s));
+        }else {
+            response = new Response("UserLoginResponse", "error", Json.convertToJSON(""));
+        }
+        output.writeObject(response);
+    }
+
+    
+    private void vizualizareCarti(String s, ObjectOutputStream output) throws IOException {
+   
+        PersistentaCarte carti=new  PersistentaCarte();
+        ObservableList<Carte> date = FXCollections.observableArrayList();
+		date = carti.vizualizare();
+		for (int j = 0; j < date.size(); j++) {
+			System.out.println("Domeniu: " + date.get(j).getDomeniu() + "\n" + "Disponibilitate: "
+					+ date.get(j).getDisponibilitate() + "\n" + "Editura: " + date.get(j).getEditura() + "\n"
+					+ "Autor: " + date.get(j).getAutor() + "\n" + "Pret: " + date.get(j).getPret() + "\n" + "Titlu: "
+					+ date.get(j).getTitlu() + "\n");
+			System.out.println("\n");}
+		
+        Response response;
+        response = new Response("VizualizareCartiResponse", "success", Json.convertToJSON(""));
+    
+        output.writeObject(response);
+    }
+
+    private void AdaugareAngajat(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String nume = split[1];
+        String prenume = split[2]; 
+        String cont = split[3]; 
+        String parola = split[5]; 
+        String idPersoana = split[0]; 
+         String librarie = split[4];
+       
+        System.out.println(nume +" "+prenume);
+
+        PersistentaUtilizator utilizatorP=  new PersistentaUtilizator();
+		utilizatorP.adaugaAngajat(prenume, cont, parola, idPersoana,librarie, nume);
+	    Response response;
+        response = new Response("AdaugareAngajatResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+    
+    
+    private void StergereAngajat(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String id = split[0];
+        Utilizator ut=new Utilizator(Integer.parseInt(id));
+        PersistentaUtilizator utilizatorP=  new PersistentaUtilizator();
+		utilizatorP.stergeAngajat(ut);
+		Response response;
+        response = new Response("StergereAngajatResponse", "success", Json.convertToJSON(s));
+ 
+        output.writeObject(response);
+    }
+    
+    private void ActualizareAngajat(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String idPersoana = split[0];
+        String nume = split[1]; 
+        String prenume = split[2]; 
+        String cont = split[3]; 
+        String parola = split[4]; 
+        System.out.println(nume +" "+prenume);
+        PersistentaUtilizator utilizatorP=  new PersistentaUtilizator();
+		utilizatorP.actualizareAngajat(idPersoana, nume, prenume, cont, parola);
+	    Response response;
+        response = new Response("ActualizareAngajatResponse", "success", Json.convertToJSON(s));
+   
+        output.writeObject(response);
+    }
+    
+    private void AdaugareCarte(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String domeniu = split[0];
+        String disponibilitate = split[1]; 
+        String editura = split[2]; 
+        String autor = split[3]; 
+        String pret = split[4]; 
+        String titlu = split[5]; 
+ 
+
+       PersistentaCarte carte= PersistentaCarte.getInstance();
+		carte.adaugare(domeniu, disponibilitate, editura, autor, pret, titlu);
+	    Response response;
+        response = new Response("AdaugareCarteResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+    
+    private void StergereCarte(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String titlu = split[0];
+        PersistentaCarte carte= PersistentaCarte.getInstance();
+		carte.StergeCarte(titlu);
+	    Response response;
+        response = new Response("StergereCarteResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+    
+    private void ActualizareCarte(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String domeniu = split[0];
+        String disponibilitate = split[1]; 
+        String editura = split[2]; 
+        String autor = split[3]; 
+        String pret = split[4]; 
+        String titlu = split[5];  
+
+        PersistentaCarte carte= PersistentaCarte.getInstance();
+		carte.Actualizare(domeniu, disponibilitate, editura, autor, pret, titlu);
+	    Response response;
+        response = new Response("ActualizareCarteResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+    
+    private void CautaCarte(String s, ObjectOutputStream output) {
+        String[] split = s.split("\\s+"); 
+        String titlu= split[0];
+        PersistentaCarte carte= PersistentaCarte.getInstance();
+        ObservableList<Carte> date = FXCollections.observableArrayList();
+
+		date = 	carte.cautareCarte(titlu);
+	
+   		for (int j = 0; j < date.size(); j++) {
+   			System.out.println("Domeniu: " + date.get(j).getDomeniu() + "\n" + "Disponibilitate: "
+					+ date.get(j).getDisponibilitate() + "\n" + "Editura: " + date.get(j).getEditura() + "\n"
+					+ "Autor: " + date.get(j).getAutor() + "\n" + "Titlu: " + date.get(j).getTitlu() + "\n");
+			System.out.println("\n");}
+	
+	    Response response;
+        response = new Response("CautareCarteResponse", "success", Json.convertToJSON(s));
+        try {
+			output.writeObject(response);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+    }
+    
+    private void VanzareCarte(String s, ObjectOutputStream output) {
+        String[] split = s.split("\\s+"); 
+        String titlu= split[0];
+        PersistentaCarte carte= PersistentaCarte.getInstance();
+    
+	   carte.vanzareCarte(titlu);
+	
+	    Response response;
+        response = new Response("VanzareCarteResponse", "success", Json.convertToJSON(s));
+        try {
+			output.writeObject(response);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+    }
+    
+  
+   
+    private void VizualizareAngajati(String s, ObjectOutputStream output) throws IOException {
+    	   
+    	PersistentaUtilizator utilizatorP= new PersistentaUtilizator();
+    	ObservableList<Utilizator> date = FXCollections.observableArrayList();
+
+		date = utilizatorP.vizualizare();
+	
+   		for (int j = 0; j < date.size(); j++) {
+			System.out.println("Nume: " + date.get(j).getNume() + "\n" + "Prenume: " + date.get(j).getPrenume() + "\n"
+					+ "Cont: " + date.get(j).getCont() + "\n" + "Parola: " + date.get(j).getParola() + "\n");
+			System.out.println("\n");
+
+		}
+        Response response;
+        response = new Response("VizualizareAngajatiResponse", "success", Json.convertToJSON(""));
+    
+        output.writeObject(response);
+    }
+
+ 
+    private void FiltrareCarti(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String combo = split[0];
+        String filtrare = split[1];
+        
+      
+        PersistentaCarte carte= PersistentaCarte.getInstance();
+        ObservableList<Carte> date = FXCollections.observableArrayList();
+		date=carte.filtrareCarti(combo, filtrare);
+		for (int i = 0; i < date.size(); i++) {
+			System.out.println("Domeniu: " + date.get(i).getDomeniu() + "\n" + "Disponibilitate: "
+					+ date.get(i).getDisponibilitate() + "\n" + "Editura: " + date.get(i).getEditura() + "\n"
+					+ "Autor: " + date.get(i).getAutor() + "\n" + "Titlu: " + date.get(i).getTitlu() + "\n");
+			System.out.println("\n");}
+	    Response response;
+        response = new Response("FiltrareCarteResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+    
+    private void Rapoarte(String s, ObjectOutputStream output) throws IOException {
+        String[] split = s.split("\\s+"); 
+        String combo = split[0];
+
+ 
+
+        PersistentaCarte carte= PersistentaCarte.getInstance();
+       
+      carte.VizualizareRapoarte(combo);
+	    Response response;
+        response = new Response("RapoarteResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+    
+    private void Statistici(String s, ObjectOutputStream output) throws IOException {
+      
+	    Response response;
+        response = new Response("RapoarteResponse", "success", Json.convertToJSON(s));
+        output.writeObject(response);
+    }
+
+    
+ 
+}
